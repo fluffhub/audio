@@ -12,9 +12,19 @@ Package(function P() {
   P.Import("fluff",function I(F) {
     //a Block is defined in fluff/index.js
     P.Block(function B() {
+      //Define inputs / outputs first.
+      //Use integers or strings as arguments to Inputs and Outputs
+      //These become input/output pins on the block
       B.Outputs("ctx");
+
+      //Repr is just the contents of the SVG representation of the Block.
+      //Use a descriptive name or even SVG symbol.
+      B.Def("repr","Audio");
+
+      //Name defined here overwrites all the other names
       B.Name("AudioContext");
-      B.Init(function AudioContext() {
+
+      B.Init(function Audio() {
         /*
         init is called at program init time,
         prior to the input pin values being available.
@@ -25,12 +35,17 @@ Package(function P() {
         //find the appropriate AudioContext.
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-        //
+        //Because context will not be JSON serializable, it should be NON-ENUMERABLE
+        Object.defineProperty(this,"context",{enumerable:false,configurable:false,writable:true});
+
+        //Set a local variable.  This name will be local to the call scope.
         this.context = new AudioContext();
+
 
       });
 
-      B.Repr("Audio");
+
+
       B.Call(function ctx() {
         /*
         Call is called when the block performs a step.
@@ -46,14 +61,17 @@ Package(function P() {
         */
 
         //just setting the 1 output pin to the initialized context.
-        ctx=this.context;
+        ctx=context;
       });
     });
 
 
+    /*
+    The Filter block takes a context, modifies it, and returns the modified context.
+    */
     P.Block(function B() {
       B.Name("Filter");
-      B.Repr("Filter");
+      B.Def("repr","Filter");
       B.Inputs(1)
       B.Outputs(0)
       B.Def(function doSomething(toSomething) {
@@ -64,7 +82,7 @@ Package(function P() {
         return toSomething;
       });
       B.Init(function Filter() {
-          this.context=$1;
+
       });
       B.Call(function F() {
         //Just pass a modified context object through.
